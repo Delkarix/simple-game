@@ -4,8 +4,6 @@ int SDL_AppEvent(void* appstate, const SDL_Event* event) {
     if (!running) {
         return 1;
     }
-
-    SDL_Log("%d", event->type);
     
     switch (event->type) {
         case SDL_EVENT_KEY_DOWN:
@@ -15,7 +13,6 @@ int SDL_AppEvent(void* appstate, const SDL_Event* event) {
                     running = 0;
                     break;
                 case SDLK_w:
-                    SDL_Log("up");
                     key_table.w_down = 1;
                     break;
                 case SDLK_a:
