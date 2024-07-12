@@ -19,10 +19,14 @@
 
 // This is super dumb and bad but we need to manually include these because otherwise the linker loses its shit due to multiple definitions, some of which we might not be able to fix because they're out in the SDL headers.
 // We need to find an alternative for the future because this will cripple memory use during compile time.
+#ifdef USE_SDL3_SEMANTICS
 #include "AppIterate.c"
 #include "AppInit.c"
 #include "AppEvent.c"
 #include "AppQuit.c"
+#endif
+
+KeyTable key_table = {0};
 
 SDL_Window* window = NULL;
 
@@ -202,3 +206,21 @@ void RenderString(const char* str, size_t length, int x, int y, Color color) {
         }
     }
 }
+
+#ifndef USE_SDL3_SEMANTICS
+int main(int argc, char** argv) {
+    SDL_AppInit(NULL, argc, argv);
+    SDL_Event e;
+
+    while (running) {
+        while (SDL_PollEvent(&e) != 0) {
+            SDL_AppEvent(NULL, &e);
+        }
+
+        SDL_AppIterate(NULL);
+    }
+
+    SDL_AppQuit(NULL);
+    SDL_Quit();
+}
+#endif

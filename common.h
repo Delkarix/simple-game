@@ -1,10 +1,16 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+// When compiling with USE_SDL3_SEMANTICS, select only common.c
+// Otherwise, include all C files (*.c)
+//#define USE_SDL3_SEMANTICS
+
+#ifdef USE_SDL3_SEMANTICS
 #define SDL_MAIN_USE_CALLBACKS
+#endif
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,6 +21,7 @@
 #define HEIGHT 960 //480
 
 #define USE_WINDOW_SURFACE // This causes a dramatic speedup (~40+ more FPS) due to fewer constant writes between buffers (taking a more direct path). However, this has the possibility of causing undefined behavior due to surface-locking mechanisms.
+
 
 //#define TARGET_FPS 60
 
@@ -56,12 +63,14 @@ typedef struct Enemy {
     int value;
 } converter;*/
 
-struct {
+typedef struct {
     unsigned char w_down : 1;
     unsigned char a_down : 1;
     unsigned char s_down : 1;
     unsigned char d_down : 1;
-} key_table;
+} KeyTable;
+
+extern KeyTable key_table;
 
 extern SDL_Window* window;
 
@@ -112,8 +121,11 @@ void KillCurrentEnemy();
 void RenderChar(char chr, int x, int y, Color color);
 void RenderString(const char* str, size_t length, int x, int y, Color color);
 
-int AppInit();
-int AppIterate();
-int AppEvent(const SDL_Event* event);
-void AppQuit();
+#ifndef USE_SDL3_SEMANTICS
+int SDL_AppInit(void** appstate, int argc, char** argv);
+int SDL_AppIterate(void* appstate);
+int SDL_AppEvent(void* appstate, const SDL_Event* event);
+void SDL_AppQuit(void* appstate);
+#endif
+
 #endif
