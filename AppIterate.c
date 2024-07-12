@@ -30,9 +30,16 @@ int SDL_AppIterate(void* appstate) {
     int ticks_atm = SDL_GetTicks();
     if (ticks_atm >= curr_ticks_fps + 1000) {
         fps = frames;
-        enemy_wait -= 10; // every second, increase the enemy spawning rate.
+
+        if (enemies_spawn) {
+            enemy_wait -= 10; // every second, increase the enemy spawning rate.
+        }
+        
         player_speed += 0.1; // Make player faster
-        enemy_speed += 0.1; // Make enemies faster
+
+        if (enemies_move) {
+            enemy_speed += 0.1; // Make enemies faster
+        }
 
         frames = 0;
 
