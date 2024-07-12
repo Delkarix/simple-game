@@ -55,7 +55,7 @@ int SDL_AppEvent(void* appstate, const SDL_Event* event) {
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             CreateLaser();
             SDL_Log("Laser Count: %d", laser_count);
-            SDL_Log("Laser velocity: %f", current_laser->vx);
+            //SDL_Log("Laser velocity: %f", current_laser->vx);
             break;
     }
 

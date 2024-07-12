@@ -8,6 +8,7 @@
         "stdio.h": "c",
         "stdint.h": "c",
         "stdlib.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "cl.h": "c"
     }
 }

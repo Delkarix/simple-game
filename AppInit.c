@@ -45,7 +45,7 @@ int SDL_AppInit(void** appstate, int argc, char** argv) {
 
     SDL_ShowWindow(window);
     SDL_Log("starded");
-    SDL_Log("%ld", sizeof(const unsigned long long));
+    //SDL_Log("%ld", sizeof(const unsigned long long));
 
 #ifdef TARGET_FPS
     curr_ticks = SDL_GetTicks();

@@ -6,9 +6,14 @@
 //#define USE_SDL3_SEMANTICS
 #define USE_WINDOW_SURFACE // This causes a dramatic speedup (~40+ more FPS) due to fewer constant writes between buffers (taking a more direct path). However, this has the possibility of causing undefined behavior due to surface-locking mechanisms.
 //#define TARGET_FPS 60
+#define USE_OPENCL
 
 #ifdef USE_SDL3_SEMANTICS
 #define SDL_MAIN_USE_CALLBACKS
+#endif
+
+#ifdef USE_OPENCL
+#include <CL/cl.h>
 #endif
 
 #include <SDL3/SDL.h>
