@@ -1,9 +1,11 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef MAIN_H
+#define MAIN_H
 
 // When compiling with USE_SDL3_SEMANTICS, select only common.c
 // Otherwise, include all C files (*.c)
 //#define USE_SDL3_SEMANTICS
+#define USE_WINDOW_SURFACE // This causes a dramatic speedup (~40+ more FPS) due to fewer constant writes between buffers (taking a more direct path). However, this has the possibility of causing undefined behavior due to surface-locking mechanisms.
+//#define TARGET_FPS 60
 
 #ifdef USE_SDL3_SEMANTICS
 #define SDL_MAIN_USE_CALLBACKS
@@ -20,17 +22,19 @@
 #define WIDTH 1280 //640
 #define HEIGHT 960 //480
 
-#define USE_WINDOW_SURFACE // This causes a dramatic speedup (~40+ more FPS) due to fewer constant writes between buffers (taking a more direct path). However, this has the possibility of causing undefined behavior due to surface-locking mechanisms.
-
-
-//#define TARGET_FPS 60
-
 typedef struct Color
 {
+#ifdef USE_WINDOW_SURFACE
     Uint8 b;
     Uint8 g;
     Uint8 r;
     Uint8 a;
+#else
+    Uint8 r;
+    Uint8 g;
+    Uint8 b;
+    Uint8 a;
+#endif
 } Color;
 
 // This is a circular doubly linked-list. I'm so proud of myself for thinking of this, this feels kinda clever
@@ -70,7 +74,7 @@ typedef struct {
     unsigned char d_down : 1;
 } KeyTable;
 
-extern KeyTable key_table;
+extern KeyTable key_table; // This is annoying
 
 extern SDL_Window* window;
 

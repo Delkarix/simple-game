@@ -1,4 +1,4 @@
-#include "common.h"
+#include "main.h"
 
 int SDL_AppIterate(void* appstate) {
     if (!running) {
@@ -34,7 +34,6 @@ int SDL_AppIterate(void* appstate) {
         player_speed += 0.1; // Make player faster
         enemy_speed += 0.1; // Make enemies faster
 
-        //SDL_Log("\x1b[1FFPS: %d     ", frames);
         frames = 0;
 
         curr_ticks_fps = ticks_atm;
@@ -65,6 +64,7 @@ int SDL_AppIterate(void* appstate) {
     unsigned char dead_laser = 0;
     for (int i = 0; i < laser_count; i++) {
         current_laser->x += current_laser->vx;
+        current_laser->y += current_laser->vy;
 
         // Test if any lasers hit enemies
         for (int j = 0; j < enemy_count; j++) {
@@ -105,8 +105,8 @@ int SDL_AppIterate(void* appstate) {
         current_enemy->vx = enemy_speed*(position[0] - current_enemy->x)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
         current_enemy->vy = enemy_speed*(position[1] - current_enemy->y)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
 
-        current_enemy->x += current_enemy->vx;
-        current_enemy->y += current_enemy->vy; // No need to store vx and vy tbh
+        //current_enemy->x += current_enemy->vx;
+        //current_enemy->y += current_enemy->vy; // No need to store vx and vy tbh
 
         // Determine if player should be dead
         if ((position[0] + 10 >= current_enemy->x - current_enemy->length && position[1] + 10 >= current_enemy->y - current_enemy->length) && (position[0] - 10 < current_enemy->x + current_enemy->length && position[1] - 10 < current_enemy->y + current_enemy->length)) {

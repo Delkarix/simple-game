@@ -1,4 +1,4 @@
-#include "common.h"
+#include "main.h"
 
 void SDL_AppQuit(void* appstate) {
     SDL_Log("quidding\n");

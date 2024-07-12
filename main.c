@@ -14,7 +14,9 @@
 
 // Work on vectorization optimizations
 
-#include "common.h"
+// Maybe add keybind to toggle enemy movement/spawning?
+
+#include "main.h"
 #include "font.h"
 
 // This is super dumb and bad but we need to manually include these because otherwise the linker loses its shit due to multiple definitions, some of which we might not be able to fix because they're out in the SDL headers.
@@ -213,6 +215,7 @@ int main(int argc, char** argv) {
     SDL_Event e;
 
     while (running) {
+        // This loop was particularly annoying to figure out, since apparently you HAVE to do SDL_PollEvent() != 0 instead of !SDL_PollEvent(), for whatever reason.
         while (SDL_PollEvent(&e) != 0) {
             SDL_AppEvent(NULL, &e);
         }

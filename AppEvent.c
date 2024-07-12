@@ -1,4 +1,4 @@
-#include "common.h"
+#include "main.h"
 
 int SDL_AppEvent(void* appstate, const SDL_Event* event) {
     if (!running) {

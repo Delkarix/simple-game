@@ -1,4 +1,4 @@
-#include "common.h"
+#include "main.h"
 
 int SDL_AppInit(void** appstate, int argc, char** argv) {
     if (SDL_Init(SDL_INIT_VIDEO))
@@ -36,20 +36,12 @@ int SDL_AppInit(void** appstate, int argc, char** argv) {
 
     SDL_LockSurface(win_surface);
 
-    pixels = win_surface->pixels; // I doubt this will return 0
+    pixels = win_surface->pixels; // Create an alias to the win_surface
 #endif
     // Randomize enemy positions
     for (int i = 0; i < 5; i++) {
         CreateEnemy();
     }
-
-    /*main_texture_rect.w = WIDTH;
-    main_texture_rect.h = HEIGHT;
-    window_rect.w = WIDTH;
-    window_rect.h = HEIGHT;*/
-
-    //SDL_CreateThread(fps_counter, "fps_counter", NULL);
-    //SDL_CreateThread(EnemyGenerationLoop, "enemy_gen_loop", NULL);
 
     SDL_ShowWindow(window);
     SDL_Log("starded");
