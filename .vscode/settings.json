@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "cstdlib": "c",
+        "sdl_main.h": "c",
+        "sdl.h": "c",
+        "stddef.h": "c",
+        "common.h": "c"
+    }
+}
