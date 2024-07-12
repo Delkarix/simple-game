@@ -46,7 +46,7 @@ int SDL_AppIterate(void* appstate) {
         curr_ticks_fps = ticks_atm;
     }
 
-    if (ticks_atm >= curr_ticks_enemy + enemy_wait && enemies_spawn) {
+    if ((ticks_atm >= curr_ticks_enemy + enemy_wait) && enemies_spawn) {
         CreateEnemy();
         curr_ticks_enemy = SDL_GetTicks();
     }

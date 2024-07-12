@@ -1,8 +1,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-// When compiling with USE_SDL3_SEMANTICS, select only common.c
+// When compiling with USE_SDL3_SEMANTICS, select only main.c
 // Otherwise, include all C files (*.c)
+
 //#define USE_SDL3_SEMANTICS
 #define USE_WINDOW_SURFACE // This causes a dramatic speedup (~40+ more FPS) due to fewer constant writes between buffers (taking a more direct path). However, this has the possibility of causing undefined behavior due to surface-locking mechanisms.
 //#define TARGET_FPS 60
