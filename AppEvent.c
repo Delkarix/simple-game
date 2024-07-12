@@ -24,6 +24,12 @@ int SDL_AppEvent(void* appstate, const SDL_Event* event) {
                 case SDLK_d:
                     key_table.d_down = 1;
                     break;
+                case SDLK_1:
+                    enemies_move = !enemies_move;
+                    break;
+                case SDLK_2:
+                    enemies_spawn = !enemies_spawn;
+                    break;
                 case SDLK_ESCAPE:
                     paused = !paused;
                     break;

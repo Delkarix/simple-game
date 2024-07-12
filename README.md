@@ -12,6 +12,8 @@ Controls are simple:
 * S: Down
 * D: Right
 * Q: Quit
+* 1: Toggle Enemy Movement
+* 2: Toggle Enemy Spawning
 * Escape: Pause
 * Left-Click: Fire
 

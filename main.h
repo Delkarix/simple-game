@@ -94,6 +94,8 @@ extern Color* pixels;
 
 extern int running;
 extern int paused;
+extern int enemies_move;
+extern int enemies_spawn;
 
 // Using arrays to encourage the compiler to vectorize code
 extern float position[2];

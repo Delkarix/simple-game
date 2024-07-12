@@ -39,7 +39,7 @@ int SDL_AppIterate(void* appstate) {
         curr_ticks_fps = ticks_atm;
     }
 
-    if (ticks_atm >= curr_ticks_enemy + enemy_wait) {
+    if (ticks_atm >= curr_ticks_enemy + enemy_wait && enemies_spawn) {
         CreateEnemy();
         curr_ticks_enemy = SDL_GetTicks();
     }
@@ -100,24 +100,27 @@ int SDL_AppIterate(void* appstate) {
         }
     }
 
-    // Update enemies
-    for (int i = 0; i < enemy_count; i++) {
-        current_enemy->vx = enemy_speed*(position[0] - current_enemy->x)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
-        current_enemy->vy = enemy_speed*(position[1] - current_enemy->y)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
+    // Update enemies. Note that this, as-is, will prevent the player from dying as well. Not sure if that's something we want to change in the future or anything
+    if (enemies_move) {
+        for (int i = 0; i < enemy_count; i++) {
+            current_enemy->vx = enemy_speed*(position[0] - current_enemy->x)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
+            current_enemy->vy = enemy_speed*(position[1] - current_enemy->y)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
 
-        //current_enemy->x += current_enemy->vx;
-        //current_enemy->y += current_enemy->vy; // No need to store vx and vy tbh
+            current_enemy->x += current_enemy->vx;
+            current_enemy->y += current_enemy->vy; // No need to store vx and vy tbh
 
-        // Determine if player should be dead
-        if ((position[0] + 10 >= current_enemy->x - current_enemy->length && position[1] + 10 >= current_enemy->y - current_enemy->length) && (position[0] - 10 < current_enemy->x + current_enemy->length && position[1] - 10 < current_enemy->y + current_enemy->length)) {
-            RenderString("GAME OVER", 10, WIDTH/2 - 8*10/2, HEIGHT/2 - 8*10/2, (Color){255, 255, 255, 255}); // Using 8*10/2 to emphasize 8x8 bits, 10 chars wide, split in half to offset.
-            paused = 1;
+            // Determine if player should be dead
+            if ((position[0] + 10 >= current_enemy->x - current_enemy->length && position[1] + 10 >= current_enemy->y - current_enemy->length) && (position[0] - 10 < current_enemy->x + current_enemy->length && position[1] - 10 < current_enemy->y + current_enemy->length)) {
+                RenderString("GAME OVER", 10, WIDTH/2 - 8*10/2, HEIGHT/2 - 8*10/2, (Color){255, 255, 255, 255}); // Using 8*10/2 to emphasize 8x8 bits, 10 chars wide, split in half to offset.
+                paused = 1;
 
-            SDL_Log("DEAD");
+                SDL_Log("DEAD");
+            }
+
+            current_enemy = current_enemy->next_enemy;
         }
-
-        current_enemy = current_enemy->next_enemy;
     }
+    
 
     // Draw player sprite thingy
     for (int iy = position[1]-10; iy < position[1]+10; iy++) {

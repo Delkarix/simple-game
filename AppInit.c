@@ -38,10 +38,10 @@ int SDL_AppInit(void** appstate, int argc, char** argv) {
 
     pixels = win_surface->pixels; // Create an alias to the win_surface
 #endif
-    // Randomize enemy positions
-    for (int i = 0; i < 5; i++) {
+    // Create more enemies
+    /*for (int i = 0; i < 5; i++) {
         CreateEnemy();
-    }
+    }*/
 
     SDL_ShowWindow(window);
     SDL_Log("starded");

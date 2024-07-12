@@ -53,6 +53,8 @@ Color* pixels = NULL;
 
 int running = 1;
 int paused = 1;
+int enemies_move = 1;
+int enemies_spawn = 1;
 
 // Using arrays to encourage the compiler to vectorize code
 float position[2] = {WIDTH/2, HEIGHT/2};
