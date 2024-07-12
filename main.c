@@ -16,6 +16,16 @@
 
 // Maybe add keybind to toggle enemy movement/spawning?
 
+/*
+
+OPENCL TODO:
+* Movement of all objects (player, enemies, lasers)
+* Graphics manipulation and bulk pixel writing (drawing enemies, lasers, and player)
+* Displaying text
+
+Note that synchronous kernels may cause weird pixel-fighting issues
+*/
+
 #include "main.h"
 #include "font.h"
 
