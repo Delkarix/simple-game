@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <CL/cl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>

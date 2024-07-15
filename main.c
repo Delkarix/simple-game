@@ -11,6 +11,19 @@
 // Maybe make high score system?
 
 // Make powerups
+/*
+    IDEAS:
+        Scatter-shot thing
+        Homing lasers
+        Rapid fire
+        Shield/invincibility
+        Explosive Barrels
+        Piercing
+        Ricochet
+        Extra Life
+
+        Allow them to combine in different ways
+*/
 
 // Work on vectorization optimizations
 
