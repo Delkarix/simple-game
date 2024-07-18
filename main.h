@@ -19,12 +19,15 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <CL/cl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+
+#define MAX(a,b) ((a) > (b) ? a : b)
+#define MIN(a,b) ((a) < (b) ? a : b)
+
 
 #define WIDTH 1280 //640
 #define HEIGHT 960 //480
@@ -51,6 +54,7 @@ typedef struct Laser {
     float y;
     float vx;
     float vy;
+    unsigned char hit;
     Color color;
     float length;
     struct Laser* prev_laser;
@@ -62,12 +66,20 @@ typedef struct Enemy {
     float y;
     float vx;
     float vy;
+    unsigned char hit; // maybe change this to flags, for like freezing or something
     Color color;
     float length;
     struct Enemy* prev_enemy;
     struct Enemy* next_enemy;
-    unsigned char hit;
 } Enemy;
+
+typedef struct __attribute__((packed)) Movable {
+    float x;
+    float y;
+    float vx;
+    float vy;
+    unsigned char hit;
+} Movable;
 
 /*union {
     Color color;
@@ -125,6 +137,15 @@ extern int fps;
 extern int score;
 
 extern int enemy_wait;
+
+#ifdef USE_OPENCL
+//extern Movable* objects;
+extern cl_context context;
+extern cl_command_queue command_queue;
+extern cl_mem movable_objects;
+extern cl_program program;
+extern cl_kernel kernel;
+#endif
 
 void Sleep(int millis);
 void CreateLaser();

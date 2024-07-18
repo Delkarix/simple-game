@@ -25,8 +25,18 @@ void SDL_AppQuit(void* appstate) {
 #else
     SDL_UnlockSurface(win_surface);
 #endif
-    
 
+#ifdef USE_OPENCL
+    // Probably should have testing for each of these
+    clFlush(command_queue);
+    clFinish(command_queue);
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
+    clReleaseMemObject(movable_objects);
+    clReleaseCommandQueue(command_queue);
+    clReleaseContext(context);
+#endif
+    
     if (window) {
         SDL_DestroyWindow(window);
         window = NULL;

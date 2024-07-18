@@ -26,9 +26,6 @@
 */
 
 // Work on vectorization optimizations
-
-// Maybe add keybind to toggle enemy movement/spawning?
-
 /*
 
 OPENCL TODO:
@@ -95,6 +92,15 @@ int score = 0;
 
 int enemy_wait = 500;
 
+#ifdef USE_OPENCL
+//Movable* objects = NULL;
+cl_context context = NULL;
+cl_command_queue command_queue = NULL;
+cl_mem movable_objects = NULL;
+cl_program program = NULL;
+cl_kernel kernel = NULL;
+#endif
+
 void Sleep(int millis) {
     long last_time = SDL_GetTicks();
 
@@ -129,9 +135,12 @@ void CreateLaser() {
     current_laser->vx = 10*(mouse_position[0] - position[0])/SDL_sqrt(SDL_pow(mouse_position[0] - position[0], 2) + SDL_pow(mouse_position[1] - position[1], 2));
     current_laser->vy = 10*(mouse_position[1] - position[1])/SDL_sqrt(SDL_pow(mouse_position[0] - position[0], 2) + SDL_pow(mouse_position[1] - position[1], 2));
     current_laser->length = 100; // Arbitrary length
+
+    current_laser->hit = 0;
     laser_count++;
 }
 
+// NOTE: BULK DELETIONS WILL BE INEFFICIENT DUE TO REPEATED STITCHING
 void KillCurrentLaser() {
     if (laser_count == 1) {
         SDL_free(current_laser);
@@ -186,6 +195,7 @@ void CreateEnemy() {
     enemy_count++;
 }
 
+// NOTE: BULK DELETIONS WILL BE INEFFICIENT DUE TO REPEATED STITCHING
 void KillCurrentEnemy() {
     if (enemy_count == 1) {
         SDL_free(current_enemy);

@@ -67,6 +67,95 @@ int SDL_AppIterate(void* appstate) {
         position[0] += player_speed;
     }
 
+#ifdef USE_OPENCL
+    // NOTE: THIS HAS UNDEFINED BEHAVIOR IF THERE ARE MORE THAN 256 LASERS ON THE SCREEN AT ANY GIVEN MOMENT
+    // WE SHOULD REWRITE THIS IN A HIGHER-LEVEL LANGUAGE TO MAKE DYNAMIC MEMORY MANAGEMENT EASIER
+    // IN THIS FUTURE, WE *NEED* TO HAVE THE LASERS AND ENEMIES IN A SINGLE BUFFER
+
+    // Write the objects to the buffer
+    cl_int ret;
+    Movable* objects = clEnqueueMapBuffer(command_queue, movable_objects, CL_TRUE, CL_MAP_WRITE, 0, sizeof(Movable)*laser_count, 0, NULL, NULL, &ret);
+    if (ret) {
+        SDL_Log("Failed to map objects. Error code: %d", ret);
+        return -1;
+    }
+    for (int i = 0; i < laser_count; i++) {
+        memcpy(&objects[i], current_laser, sizeof(Movable));
+        current_laser = current_laser->next_laser;
+    }
+    ret = clEnqueueUnmapMemObject(command_queue, movable_objects, objects, 0, NULL, NULL);
+    if (ret) {
+        SDL_Log("Failed to unmap objects. Error code: %d", ret);
+        return -1;
+    }
+
+    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), &movable_objects);
+    if (ret) {
+        SDL_Log("Failed to set kernel arg. Error code: %d", ret);
+        return -1;
+    }
+    size_t global_size = laser_count;
+    size_t local_size = 1;
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+    if (ret) {
+        SDL_Log("Failed to enqueue the kernel. Error code: %d", ret);
+        return -1;
+    }
+
+    // Read the objects back
+    objects = clEnqueueMapBuffer(command_queue, movable_objects, CL_TRUE, CL_MAP_READ, 0, sizeof(Movable)*laser_count, 0, NULL, NULL, &ret);
+    if (ret) {
+        SDL_Log("Failed to map objects. Error code: %d", ret);
+        return -1;
+    }
+    for (int i = 0; i < laser_count; i++) {
+        memcpy(current_laser, &objects[i], sizeof(Movable));
+        current_laser = current_laser->next_laser;
+    }
+    ret = clEnqueueUnmapMemObject(command_queue, movable_objects, objects, 0, NULL, NULL);
+    if (ret) {
+        SDL_Log("Failed to unmap objects. Error code: %d", ret);
+        return -1;
+    }
+
+    // If any of the detected lasers were hit, kill them.
+    for (int i = 0; i < laser_count; i++) {
+        if (current_laser->hit) {
+            KillCurrentLaser();
+            SDL_Log("Laser Count: %d", laser_count);
+        }
+
+        if (current_laser && current_laser->next_laser) {
+            current_laser = current_laser->next_laser;
+        }
+    }
+
+    // Test for enemy deletion
+    unsigned char dead_laser = 0;
+    for (int i = 0; i < laser_count; i++) {
+        // Test if any lasers hit enemies
+        for (int j = 0; j < enemy_count; j++) {
+            if (current_laser->x <= current_enemy->x + current_enemy->length && current_laser->x >= current_enemy->x - current_enemy->length && current_laser->y <= current_enemy->y + current_enemy->length && current_laser->y >= current_enemy->y - current_enemy->length) {
+                dead_laser = 1;
+                current_enemy->hit = 1;
+                score++;
+                SDL_Log("Killed Enemy");
+            }
+
+            current_enemy = current_enemy->next_enemy;
+        }
+
+        // x1 and y1 will always be closer to the player, which will always be on the inside of the drawing rectangle, so x2 and y2 are the only ones at risk of accidentally leaving the drawing area.
+        if (dead_laser) {
+            KillCurrentLaser();
+            SDL_Log("Laser Count: %d", laser_count);
+        }
+
+        if (current_laser && current_laser->next_laser) {
+            current_laser = current_laser->next_laser;
+        }
+    }
+#else
     // Update Lasers
     unsigned char dead_laser = 0;
     for (int i = 0; i < laser_count; i++) {
@@ -95,7 +184,10 @@ int SDL_AppIterate(void* appstate) {
             current_laser = current_laser->next_laser;
         }
     }
+#endif
 
+
+    // Maybe put this in OpenCL?
     // Kill any enemies that have been hit. This loop may become bugged, who knows.
     for (int i = 0; i < enemy_count; i++) {
         if (current_enemy->hit) {
@@ -109,6 +201,89 @@ int SDL_AppIterate(void* appstate) {
 
     // Update enemies. Note that this, as-is, will prevent the player from dying as well. Not sure if that's something we want to change in the future or anything
     if (enemies_move) {
+#ifdef USE_OPENCL
+        // Figure out a way to put this into the kernel
+        for (int i = 0; i < enemy_count; i++) {
+            current_enemy->vx = enemy_speed*(position[0] - current_enemy->x)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
+            current_enemy->vy = enemy_speed*(position[1] - current_enemy->y)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
+
+            current_enemy = current_enemy->next_enemy;
+        }
+
+        cl_int ret;
+        int temp_enemy_count = 1;
+        int enemies_left = enemy_count;
+        int entity_offset = 0;
+        Movable* objects;
+        Enemy* bookmarked_enemy = current_enemy;
+
+        while (enemies_left > 0) {
+            //bookmarked_enemy ;
+
+            temp_enemy_count = MIN(enemies_left, 256);
+
+            objects = clEnqueueMapBuffer(command_queue, movable_objects, CL_TRUE, CL_MAP_WRITE, entity_offset, sizeof(Movable)*temp_enemy_count, 0, NULL, NULL, &ret);
+            if (ret) {
+                SDL_Log("Failed to map objects. Error code: %d", ret);
+                return -1;
+            }
+            for (int i = 0; i < temp_enemy_count; i++) {
+                memcpy(&objects[i], current_enemy, sizeof(Movable));
+                current_enemy = current_enemy->next_enemy;
+            }
+            ret = clEnqueueUnmapMemObject(command_queue, movable_objects, objects, 0, NULL, NULL);
+            if (ret) {
+                SDL_Log("Failed to unmap objects. Error code: %d", ret);
+                return -1;
+            }
+
+            ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), &movable_objects);
+            if (ret) {
+                SDL_Log("Failed to set kernel arg. Error code: %d", ret);
+                return -1;
+            }
+            size_t global_size = temp_enemy_count;
+            size_t local_size = 1;
+            ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+            if (ret) {
+                SDL_Log("Failed to enqueue the kernel. Error code: %d", ret);
+                return -1;
+            }
+
+            // Read the objects back
+            objects = clEnqueueMapBuffer(command_queue, movable_objects, CL_TRUE, CL_MAP_READ, 0, sizeof(Movable)*temp_enemy_count, 0, NULL, NULL, &ret);
+            if (ret) {
+                SDL_Log("Failed to map objects. Error code: %d", ret);
+                return -1;
+            }
+            for (int i = 0; i < temp_enemy_count; i++) {
+                memcpy(bookmarked_enemy, &objects[i], sizeof(Movable));
+                bookmarked_enemy = bookmarked_enemy->next_enemy;
+            }
+            ret = clEnqueueUnmapMemObject(command_queue, movable_objects, objects, 0, NULL, NULL);
+            if (ret) {
+                SDL_Log("Failed to unmap objects. Error code: %d", ret);
+                return -1;
+            }
+
+            //iterated_enemy = iterated_enemy->next_enemy;
+            enemies_left -= temp_enemy_count;
+            entity_offset += temp_enemy_count;
+        }
+
+        for (int i = 0; i < enemy_count; i++) {
+            // Determine if player should be dead
+            if ((position[0] + 10 >= current_enemy->x - current_enemy->length && position[1] + 10 >= current_enemy->y - current_enemy->length) && (position[0] - 10 < current_enemy->x + current_enemy->length && position[1] - 10 < current_enemy->y + current_enemy->length)) {
+                RenderString("GAME OVER", 10, WIDTH/2 - 8*10/2, HEIGHT/2 - 8*10/2, (Color){255, 255, 255, 255}); // Using 8*10/2 to emphasize 8x8 bits, 10 chars wide, split in half to offset.
+                paused = 1;
+
+                SDL_Log("DEAD");
+            }
+
+            current_enemy = current_enemy->next_enemy;
+        }
+
+#else
         for (int i = 0; i < enemy_count; i++) {
             current_enemy->vx = enemy_speed*(position[0] - current_enemy->x)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
             current_enemy->vy = enemy_speed*(position[1] - current_enemy->y)/SDL_sqrt(SDL_pow(position[0] - current_enemy->x, 2) + SDL_pow(position[1] - current_enemy->y, 2));
@@ -126,6 +301,7 @@ int SDL_AppIterate(void* appstate) {
 
             current_enemy = current_enemy->next_enemy;
         }
+#endif
     }
     
 
