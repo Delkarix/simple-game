@@ -34,6 +34,9 @@ OPENCL TODO:
 * Displaying text
 
 Note that synchronous kernels may cause weird pixel-fighting issues
+
+IN THE FUTURE, LOOK INTO REPLACING THE CIRCULAR LINKED LIST SYSTEM WITH TREES OR A BETTER DATA STRUCTURE
+I don't trust the c i r c l e s
 */
 
 #include "main.h"
