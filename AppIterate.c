@@ -213,7 +213,6 @@ int SDL_AppIterate(void* appstate) {
         cl_int ret;
         int temp_enemy_count = 1;
         int enemies_left = enemy_count;
-        int entity_offset = 0;
         Movable* objects;
         Enemy* bookmarked_enemy = current_enemy;
 
@@ -222,7 +221,7 @@ int SDL_AppIterate(void* appstate) {
 
             temp_enemy_count = MIN(enemies_left, 256);
 
-            objects = clEnqueueMapBuffer(command_queue, movable_objects, CL_TRUE, CL_MAP_WRITE, entity_offset, sizeof(Movable)*temp_enemy_count, 0, NULL, NULL, &ret);
+            objects = clEnqueueMapBuffer(command_queue, movable_objects, CL_TRUE, CL_MAP_WRITE, 0, sizeof(Movable)*temp_enemy_count, 0, NULL, NULL, &ret);
             if (ret) {
                 SDL_Log("Failed to map objects. Error code: %d", ret);
                 return -1;
@@ -268,7 +267,6 @@ int SDL_AppIterate(void* appstate) {
 
             //iterated_enemy = iterated_enemy->next_enemy;
             enemies_left -= temp_enemy_count;
-            entity_offset += temp_enemy_count;
         }
 
         for (int i = 0; i < enemy_count; i++) {
@@ -277,7 +275,7 @@ int SDL_AppIterate(void* appstate) {
                 RenderString("GAME OVER", 10, WIDTH/2 - 8*10/2, HEIGHT/2 - 8*10/2, (Color){255, 255, 255, 255}); // Using 8*10/2 to emphasize 8x8 bits, 10 chars wide, split in half to offset.
                 paused = 1;
 
-                SDL_Log("DEAD");
+                //SDL_Log("DEAD 1");
             }
 
             current_enemy = current_enemy->next_enemy;
@@ -296,7 +294,7 @@ int SDL_AppIterate(void* appstate) {
                 RenderString("GAME OVER", 10, WIDTH/2 - 8*10/2, HEIGHT/2 - 8*10/2, (Color){255, 255, 255, 255}); // Using 8*10/2 to emphasize 8x8 bits, 10 chars wide, split in half to offset.
                 paused = 1;
 
-                SDL_Log("DEAD");
+                //SDL_Log("DEAD");
             }
 
             current_enemy = current_enemy->next_enemy;

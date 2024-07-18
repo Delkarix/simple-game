@@ -9,6 +9,11 @@
 //#define TARGET_FPS 60
 #define USE_OPENCL
 
+/*
+As far as our current implementation is designed, it seems like using the default style is just a few frames faster than OpenCL, surprisingly.
+At 3 minutes of continuous running with minimal interference, the OpenCL version runs at ~41 FPS while the default version runs at ~48 FPS.
+This indicates that the overhead/runtime for OpenCL is slower than the CPU's runtime, unfortunately. Proof that O(1) can be slower than O(n).
+*/
 #ifdef USE_SDL3_SEMANTICS
 #define SDL_MAIN_USE_CALLBACKS
 #endif
