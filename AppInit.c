@@ -109,8 +109,8 @@ int SDL_AppInit(void** appstate, int argc, char** argv) {
     }
  
     // Build the program
-    char build_options[64];
-    snprintf(build_options, 64, "-D WIDTH=%d -D HEIGHT=%d", WIDTH, HEIGHT); // Format the macros
+    char build_options[256];
+    snprintf(build_options, 256, "-cl-single-precision-constant -cl-denorms-are-zero -cl-mad-enable -cl-no-signed-zeros -cl-fast-relaxed-math -cl-uniform-work-group-size -cl-no-subgroup-ifp -D WIDTH=%d -D HEIGHT=%d", WIDTH, HEIGHT); // Format the macros
     ret = clBuildProgram(program, 1, &device_id, build_options, NULL, NULL);
     if (!ret) {
         SDL_Log("Successfully built the program");

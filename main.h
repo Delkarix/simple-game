@@ -7,7 +7,7 @@
 //#define USE_SDL3_SEMANTICS
 #define USE_WINDOW_SURFACE // This causes a dramatic speedup (~40+ more FPS) due to fewer constant writes between buffers (taking a more direct path). However, this has the possibility of causing undefined behavior due to surface-locking mechanisms.
 //#define TARGET_FPS 60
-//#define USE_OPENCL
+#define USE_OPENCL
 
 /*
 As far as our current implementation is designed, it seems like using the default style is just a few frames faster than OpenCL, surprisingly.
