@@ -1,3 +1,8 @@
+// FOR LATER REFERENCE:
+// TO PREPROCESS THE SDL SOURCE, run (in fish)
+//      for i in **.c; clang -E $i -o $i -I./include -I./build -I./src; end
+// in the root dir of SDL. There will be a few errors, such as missing platform-specific headers. Don't worry about these.
+
 #ifndef MAIN_H
 #define MAIN_H
 
