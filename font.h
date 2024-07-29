@@ -395,7 +395,7 @@ const uint64_t FONT_COLON =
 );
 
 const uint64_t FONT_CHAR_TABLE[256] = {
-    0,  // Hopefully this sets the rest of the elements to zero (fingers crossed but probably not)
+    //0,  // Hopefully this sets the rest of the elements to zero (fingers crossed but probably not)
     ['A'] = FONT_A,
     ['B'] = FONT_B,
     ['C'] = FONT_C,
