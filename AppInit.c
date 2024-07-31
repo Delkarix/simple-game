@@ -4,7 +4,7 @@ int SDL_AppInit(void** appstate, int argc, char** argv) {
     if (SDL_Init(SDL_INIT_VIDEO))
         return -1;
 
-    window = SDL_CreateWindow("Window", WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Window", WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
     if (!window)
         return -1;
 
