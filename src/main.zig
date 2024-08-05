@@ -8,8 +8,21 @@ const HEIGHT = 480;
 
 // Updates the player.
 fn updatePlayer(game_obj: game.GameData, self: *game.GameObject) void {
-    _ = game_obj;
-    _ = self;
+    // Update player velocity
+    if (game_obj.keys.w_down and self.pos[1] > self.length) {
+        self.pos[1] -= self.vel[1];
+    }
+    else if (game_obj.keys.s_down and self.pos[1] <= HEIGHT - self.length) {
+        self.pos[1] += self.vel[1];
+    }
+
+    if (game_obj.keys.a_down and self.pos[0] > self.length) {
+        self.pos[0] -= self.vel[0];
+    }
+    else if (game_obj.keys.d_down and self.pos[0] <= WIDTH - self.length) {
+        self.pos[0] += self.vel[0];        
+    }
+    // self.pos += self.vel;
 }
 
 // Updates the laser
@@ -90,25 +103,85 @@ pub fn main() !void {
     // TODO: MAKE THE PLAYER INTO A GAME OBJECT AS WELL
 
     // Create the player object
-    const player = game.GameObject{
+    var player = game.GameObject {
         .pos = .{ WIDTH / 2, HEIGHT / 2 },
         .color = graphics.Color{ .r = 0, .g = 255, .b = 0 },
         .health = 100,
         .update_func = &updatePlayer,
         .draw_func = &drawEnemy,
+        .vel = .{data.enemy_speed, data.enemy_speed},
         .length = 10,
     };
     
-    try data.objects.append(player); // Player should always (theoretically) be item #0 in the list
+    try data.objects.append(&player); // Player should always (theoretically) be item #0 in the list
 
-    for (0..500) |_| {
-        // Clear the screen
-        @memset(window.image.pixels, graphics.Color {.r = 0, .g = 0, .b = 0});
+    while (data.running) {
 
-        // Draw and update all game objects
-        for (data.objects.items) |*object| {
-            object.update_func(data, object);
-            try object.draw_func(&window.image, object);
+        // Event loop
+        var event: sdl.SDL_Event = undefined;
+        while (sdl.SDL_PollEvent(&event) != 0) {
+            switch (event.type) {
+                sdl.SDL_EVENT_QUIT => {
+                    data.running = false;
+                },
+                sdl.SDL_EVENT_KEY_DOWN => {
+                    switch (event.key.key) {
+                        sdl.SDLK_W => {
+                            data.keys.w_down = true;
+                        },
+                        sdl.SDLK_A => {
+                            data.keys.a_down = true;
+                        },
+                        sdl.SDLK_S => {
+                            data.keys.s_down = true;
+                        },
+                        sdl.SDLK_D => {
+                            data.keys.d_down = true;
+                        },
+                        sdl.SDLK_Q => {
+                            data.running = false;
+                        },
+                        sdl.SDLK_ESCAPE => {
+                            // Quit
+                            data.paused = !data.paused;
+                        },
+                        // sdl.SDLK_o => {
+                        //     // Open
+                        //     // TODO
+                        // },
+                        else => {},
+                    }
+                },
+                sdl.SDL_EVENT_KEY_UP => {
+                    switch (event.key.key) {
+                        sdl.SDLK_W => {
+                            data.keys.w_down = false;
+                        },
+                        sdl.SDLK_A => {
+                            data.keys.a_down = false;
+                        },
+                        sdl.SDLK_S => {
+                            data.keys.s_down = false;
+                        },
+                        sdl.SDLK_D => {
+                            data.keys.d_down = false;
+                        },
+                        else => {},
+                    }
+                },
+                sdl.SDL_EVENT_MOUSE_BUTTON_DOWN => {
+                },
+                else => {},
+            }
+        
+            // Clear the screen
+            @memset(window.image.pixels, graphics.Color {.r = 0, .g = 0, .b = 0});
+            
+            // Draw and update all game objects
+            for (data.objects.items) |object| {
+                object.update_func(data, object);
+                try object.draw_func(&window.image, object);
+            }
         }
         
         // for (0..640) |x| {

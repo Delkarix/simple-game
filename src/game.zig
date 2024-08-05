@@ -15,18 +15,20 @@ pub const GameObject = struct {
 
 /// A collection of data representing the game's data
 pub const GameData = struct {
-    objects: std.ArrayList(GameObject),
+    objects: std.ArrayList(*GameObject),
     running: bool = true,
+    paused: bool = false,
     //player_pos: @Vector(2, f32),
     mouse_pos: @Vector(2, f32),
     randomizer: std.Random.Xoshiro256,
     //window: sdl.SDL.Window,
-    enemy_speed: f32 = 1.0,
+    enemy_speed: f32 = 10,
+    keys: Keyboard = .{},
 
     /// Initializes the game data
     pub fn init(allocator: std.mem.Allocator) GameData {
         return GameData {
-            .objects = std.ArrayList(GameObject).init(allocator),
+            .objects = std.ArrayList(*GameObject).init(allocator),
             .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something,
             //.player_pos = .{0, 0},
             .mouse_pos = .{0, 0}
@@ -49,3 +51,9 @@ pub const GameData = struct {
     }
 };
 
+pub const Keyboard = struct {
+    w_down: bool = false,
+    a_down: bool = false,
+    s_down: bool = false,
+    d_down: bool = false
+};
