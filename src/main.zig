@@ -7,7 +7,6 @@ const WIDTH = 640;
 const HEIGHT = 480;
 
 pub fn main() !void {
-    //TEST
     const SDL = try sdl.init();
     defer sdl.deinit();
 
