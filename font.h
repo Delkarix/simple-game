@@ -1,3 +1,6 @@
+#ifndef FONT_HEADER
+#define FONT_HEADER
+
 // NOTE: THIS WORKS IF const uint64_t IS 64 BITS!!!
 #include <stdint.h>
 
@@ -91,7 +94,7 @@ const uint64_t FONT_G =
 
                      
 const uint64_t FONT_H =
-    FONT(0b11000011,
+     FONT(0b11000011,
             11000011,
             11000011,
             11111111,
@@ -301,8 +304,8 @@ const uint64_t FONT_1 =
             00011000);
 
 const uint64_t FONT_2 =
-     FONT(0b11111111,
-            00000011,
+     FONT(0b01111110,
+            10000011,
             00000110,
             00001100,
             00011000,
@@ -392,7 +395,7 @@ const uint64_t FONT_COLON =
 );
 
 const uint64_t FONT_CHAR_TABLE[256] = {
-    0,  // Hopefully this sets the rest of the elements to zero (fingers crossed but probably not)
+    //0,  // Hopefully this sets the rest of the elements to zero (fingers crossed but probably not)
     ['A'] = FONT_A,
     ['B'] = FONT_B,
     ['C'] = FONT_C,
@@ -431,3 +434,5 @@ const uint64_t FONT_CHAR_TABLE[256] = {
     ['9'] = FONT_9,
     [':'] = FONT_COLON
 };
+
+#endif
