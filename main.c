@@ -253,7 +253,6 @@ int main(int argc, char** argv) {
     SDL_Event e;
 
     while (running) {
-        // This loop was particularly annoying to figure out, since apparently you HAVE to do SDL_PollEvent() != 0 instead of !SDL_PollEvent(), for whatever reason.
         while (SDL_PollEvent(&e) != 0) {
             SDL_AppEvent(NULL, &e);
         }

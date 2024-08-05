@@ -7,21 +7,21 @@ int SDL_AppEvent(void* appstate, const SDL_Event* event) {
     
     switch (event->type) {
         case SDL_EVENT_KEY_DOWN:
-            switch (event->key.keysym.sym) {
-                case SDLK_q:
+            switch (event->key.key) {
+                case SDLK_Q:
                     // If Q is pressed, set the program's state to "not running", ensuring that everything gets closed out of (including threads, should we have any)
                     running = 0;
                     break;
-                case SDLK_w:
+                case SDLK_W:
                     key_table.w_down = 1;
                     break;
-                case SDLK_a:
+                case SDLK_A:
                     key_table.a_down = 1;
                     break;
-                case SDLK_s:
+                case SDLK_S:
                     key_table.s_down = 1;
                     break;
-                case SDLK_d:
+                case SDLK_D:
                     key_table.d_down = 1;
                     break;
                 case SDLK_1:
@@ -37,17 +37,17 @@ int SDL_AppEvent(void* appstate, const SDL_Event* event) {
             break;
 
         case SDL_EVENT_KEY_UP:
-            switch (event->key.keysym.sym) {
-                case SDLK_w:
+            switch (event->key.key) {
+                case SDLK_W:
                     key_table.w_down = 0;
                     break;
-                case SDLK_a:
+                case SDLK_A:
                     key_table.a_down = 0;
                     break;
-                case SDLK_s:
+                case SDLK_S:
                     key_table.s_down = 0;
                     break;
-                case SDLK_d:
+                case SDLK_D:
                     key_table.d_down = 0;
                     break;
             }
