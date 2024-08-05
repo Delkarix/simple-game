@@ -7,12 +7,13 @@ const WIDTH = 640;
 const HEIGHT = 480;
 
 pub fn main() !void {
+    //TEST
     const SDL = try sdl.init();
     defer sdl.deinit();
 
     var window = try sdl.SDL.Window.init(&SDL, WIDTH, HEIGHT);
     defer window.deinit();
-    
+
     // Create the allocator and arraylist
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -30,7 +31,7 @@ pub fn main() !void {
         //@memset(window.image.pixels, graphics.Color {.r = 255, .g = 0, .b = 255, .a = 255});
         for (0..640) |x| {
             for (0..480) |y| {
-                try window.image.setPixel(@intCast(x), @intCast(y), graphics.Color {.r = @intCast(data.randomizer.next() % 256), .g = @intCast(data.randomizer.next() % 256), .b = @intCast(data.randomizer.next() % 256), .a = 255});
+                try window.image.setPixel(@intCast(x), @intCast(y), graphics.Color{ .r = @intCast(data.randomizer.next() % 256), .g = @intCast(data.randomizer.next() % 256), .b = @intCast(data.randomizer.next() % 256), .a = 255 });
             }
         }
         window.update(); // For some reason, a single call won't always suffice. Annoying.
