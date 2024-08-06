@@ -5,7 +5,8 @@ const graphics = @import("graphics.zig");
 /// Represents an object within the game.
 pub const GameObject = struct {
     pos: @Vector(2, f32) = .{0, 0},
-    vel: @Vector(2, f32) = .{0, 0},
+    direction: @Vector(2, f32) = .{0, 0},
+    velocity: f32 = 0,
     length: f32 = 0,
     color: graphics.Color = .{.r = 0, .g = 0, .b = 0},
     value: i64 = 0,
@@ -13,6 +14,8 @@ pub const GameObject = struct {
     draw_func: ?*const fn (image: *graphics.Image, self: *const @This()) graphics.DrawError!void = null,
     data: ?*anyopaque = null,
     parent: *GameData,
+    invalid: bool = false,
+    dyn_alloc: bool = false, // Set this to true if the object was dynamically allocated and needs to be freed
 };
 
 /// A collection of data representing the game's data
@@ -20,16 +23,13 @@ pub const GameData = struct {
     objects: std.ArrayList(*GameObject),
     running: bool = true,
     paused: bool = false,
-    //player_pos: @Vector(2, f32),
-    mouse_pos: @Vector(2, f32),
     randomizer: std.Random.Xoshiro256,
     //window: sdl.SDL.Window,
-    enemy_speed: f32 = 10,
-    keys: Keyboard = .{},
-    game_over: bool = false,
+    keyboard: [128]bool = undefined,
     frames: u32 = 0,
     last_timestamp: i64,
     curr_fps: u32 = 0,
+    target_fps: u32 = 0, // 0 = unlimited
     score: u16 = 0,
 
     /// Initializes the game data
@@ -37,8 +37,6 @@ pub const GameData = struct {
         return GameData {
             .objects = std.ArrayList(*GameObject).init(allocator),
             .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something,
-            //.player_pos = .{0, 0},
-            .mouse_pos = .{0, 0},
             .last_timestamp = std.time.milliTimestamp(),
         };
     }
@@ -57,11 +55,4 @@ pub const GameData = struct {
     pub fn destroyObject(self: *GameData, index: usize) !void {
         try self.object_list.swapRemove(index);
     }
-};
-
-pub const Keyboard = struct {
-    w_down: bool = false,
-    a_down: bool = false,
-    s_down: bool = false,
-    d_down: bool = false
 };
