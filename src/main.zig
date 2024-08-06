@@ -2,6 +2,7 @@ const std = @import("std");
 const graphics = @import("graphics.zig");
 const sdl = @import("sdl.zig");
 const game = @import("game.zig");
+const font = @import("font.zig");
 
 const WIDTH = 640;
 const HEIGHT = 480;
@@ -12,14 +13,14 @@ fn updatePlayer(game_obj: game.GameData, self: *game.GameObject) void {
     if (game_obj.keys.w_down and self.pos[1] > self.length) {
         self.pos[1] -= self.vel[1];
     }
-    else if (game_obj.keys.s_down and self.pos[1] <= HEIGHT - self.length) {
+    else if (game_obj.keys.s_down and self.pos[1] < HEIGHT - self.length) {
         self.pos[1] += self.vel[1];
     }
 
     if (game_obj.keys.a_down and self.pos[0] > self.length) {
         self.pos[0] -= self.vel[0];
     }
-    else if (game_obj.keys.d_down and self.pos[0] <= WIDTH - self.length) {
+    else if (game_obj.keys.d_down and self.pos[0] < WIDTH - self.length) {
         self.pos[0] += self.vel[0];        
     }
     // self.pos += self.vel;
@@ -83,6 +84,7 @@ pub fn createEnemy(self: *game.GameData, x: f32, y: f32, length: f32, color: gra
 }
 
 pub fn main() !void {
+// <INITIALIZATION>
     const SDL = try sdl.init();
     defer sdl.deinit();
 
@@ -96,11 +98,10 @@ pub fn main() !void {
     var data: game.GameData = game.GameData.init(gpa.allocator());
     defer data.deinit();
 
-    //data.objects.append(game.GameObject{});
-
-    // Initialize the player's position
-    //data.player_pos = .{WIDTH/2, HEIGHT/2};
-    // TODO: MAKE THE PLAYER INTO A GAME OBJECT AS WELL
+    // Init the font system
+    const text = try font.Font.init("FONT");
+    
+// </INITIALIZATION>
 
     // Create the player object
     var player = game.GameObject {
@@ -109,14 +110,14 @@ pub fn main() !void {
         .health = 100,
         .update_func = &updatePlayer,
         .draw_func = &drawEnemy,
-        .vel = .{data.enemy_speed, data.enemy_speed},
+        .vel = @splat(data.enemy_speed),
         .length = 10,
     };
     
     try data.objects.append(&player); // Player should always (theoretically) be item #0 in the list
 
     while (data.running) {
-
+// <EVENT>
         // Event loop
         var event: sdl.SDL_Event = undefined;
         while (sdl.SDL_PollEvent(&event) != 0) {
@@ -173,25 +174,23 @@ pub fn main() !void {
                 },
                 else => {},
             }
-        
-            // Clear the screen
-            @memset(window.image.pixels, graphics.Color {.r = 0, .g = 0, .b = 0});
-            
-            // Draw and update all game objects
-            for (data.objects.items) |object| {
-                object.update_func(data, object);
-                try object.draw_func(&window.image, object);
-            }
         }
+// </EVENT>
+
+// <ITERATE>
+        // Clear the screen
+        @memset(window.image.pixels, graphics.Color {.r = 0, .g = 0, .b = 0});
         
-        // for (0..640) |x| {
-            // for (0..480) |y| {
-                // try window.image.setPixel(@intCast(x), @intCast(y), graphics.Color{ .r = @intCast(data.randomizer.next() % 256), .g = @intCast(data.randomizer.next() % 256), .b = @intCast(data.randomizer.next() % 256), .a = 255 });
-            // }
-        // }
+        // Draw and update all game objects
+        for (data.objects.items) |object| {
+            object.update_func(data, object);
+            try object.draw_func(&window.image, object);
+        }
+
+        try text.renderString(&window.image, "TEST\nTEST2", 0, 0, .{.r = 255, .g = 255, .b = 255});
+        
         window.update(); // For some reason, a single call won't always suffice. Annoying.
         //std.debug.print("{s}\n", .{sdl.SDL_GetError()});
-
-        std.time.sleep(10000000);
+// </ITERATE>
     }
 }
