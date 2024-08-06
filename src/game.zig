@@ -4,13 +4,15 @@ const graphics = @import("graphics.zig");
 
 /// Represents an object within the game.
 pub const GameObject = struct {
-    pos: @Vector(2, f32),
+    pos: @Vector(2, f32) = .{0, 0},
     vel: @Vector(2, f32) = .{0, 0},
-    length: f32,
-    color: graphics.Color,
-    health: u8 = 100,
-    update_func: *const fn (game: GameData, self: *@This()) void,
-    draw_func: *const fn (image: *graphics.Image, self: *const @This()) graphics.DrawError!void
+    length: f32 = 0,
+    color: graphics.Color = .{.r = 0, .g = 0, .b = 0},
+    value: i64 = 0,
+    update_func: ?*const fn (game: *GameData, self: *@This()) void = null,
+    draw_func: ?*const fn (image: *graphics.Image, self: *const @This()) graphics.DrawError!void = null,
+    data: ?*anyopaque = null,
+    parent: *GameData,
 };
 
 /// A collection of data representing the game's data
@@ -24,6 +26,11 @@ pub const GameData = struct {
     //window: sdl.SDL.Window,
     enemy_speed: f32 = 10,
     keys: Keyboard = .{},
+    game_over: bool = false,
+    frames: u32 = 0,
+    last_timestamp: i64,
+    curr_fps: u32 = 0,
+    score: u16 = 0,
 
     /// Initializes the game data
     pub fn init(allocator: std.mem.Allocator) GameData {
@@ -31,7 +38,8 @@ pub const GameData = struct {
             .objects = std.ArrayList(*GameObject).init(allocator),
             .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something,
             //.player_pos = .{0, 0},
-            .mouse_pos = .{0, 0}
+            .mouse_pos = .{0, 0},
+            .last_timestamp = std.time.milliTimestamp(),
         };
     }
 
