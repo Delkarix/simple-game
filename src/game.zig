@@ -1,6 +1,5 @@
 const std = @import("std");
 const graphics = @import("graphics.zig");
-const collision = @import("collision.zig");
 //const sdl = @import("sdl.zig");
 
 /// Represents an object within the game.
@@ -13,7 +12,7 @@ pub const GameObject = struct {
     value: i64 = 0,
     update_func: ?*const fn (game: *GameData, self: *@This()) void = null,
     draw_func: ?*const fn (image: *graphics.Image, self: *const @This()) graphics.DrawError!void = null,
-    collision_data: ?*const collision.CollisionData = null,
+    collision_data: ?*const CollisionData = null,
     data: ?*anyopaque = null,
     parent: *GameData,
     invalid: bool = false,
@@ -57,4 +56,9 @@ pub const GameData = struct {
     pub fn destroyObject(self: *GameData, index: usize) !void {
         try self.object_list.swapRemove(index);
     }
+};
+
+pub const CollisionData = struct {
+    test_func: *const fn (self: *GameObject, collider: *GameObject) bool,
+    collision_func: *const fn (game_data: *GameData, self: *GameObject, collider: *GameObject) void,
 };

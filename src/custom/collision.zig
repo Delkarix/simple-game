@@ -1,5 +1,6 @@
 // const std = @import("std");
-const game = @import("game.zig");
+const game = @import("../game.zig");
+const TYPES = @import("../main.zig").TYPES;
 
 // pub fn BinaryTree(comptime DataType: type) type {
 //     return struct {
@@ -18,22 +19,17 @@ const game = @import("game.zig");
     
 // };
 
-pub const CollisionData = struct {
-    test_func: *const fn (self: *game.GameObject, collider: *game.GameObject) bool,
-    collision_func: *const fn (game_data: *game.GameData, self: *game.GameObject, collider: *game.GameObject) void,
-};
-
 pub fn collisionDelete(game_data: *game.GameData, self: *game.GameObject, collider: *game.GameObject) void {
     _ = self;
 
-    if (collider.type_id == @intFromEnum(@import("main.zig").TYPES.PLAYER)) {
+    if (collider.type_id == @intFromEnum(TYPES.PLAYER)) {
         game_data.game_over = true;
     }
     else {
         collider.invalid = true;
     }
     
-    if (collider.type_id == @intFromEnum(@import("main.zig").TYPES.ENEMY)) {
+    if (collider.type_id == @intFromEnum(TYPES.ENEMY)) {
         game_data.score += 1;
     }
 }
@@ -41,7 +37,7 @@ pub fn collisionDelete(game_data: *game.GameData, self: *game.GameObject, collid
 pub fn testEnemy(self: *game.GameObject, collider: *game.GameObject) bool {
     if (self.type_id != collider.type_id) {
         // If the enemy collides with a laser, do a Point-Square test
-        if (collider.type_id == @intFromEnum(@import("main.zig").TYPES.LASER)) {
+        if (collider.type_id == @intFromEnum(TYPES.LASER)) {
             return testPointSquare(collider.pos, self.pos, self.length);
         }
         // Otherwise, do a square
@@ -54,7 +50,7 @@ pub fn testEnemy(self: *game.GameObject, collider: *game.GameObject) bool {
 }
 
 pub fn testLaser(self: *game.GameObject, collider: *game.GameObject) bool {
-    if (collider.type_id == @intFromEnum(@import("main.zig").TYPES.ENEMY) and self.type_id != collider.type_id) {
+    if (collider.type_id == @intFromEnum(TYPES.ENEMY) and self.type_id != collider.type_id) {
         return testPointSquare(self.pos, collider.pos, collider.length);
     }
 
@@ -71,12 +67,12 @@ fn testSquareSquare(square1: @Vector(2, f32), square1_length: f32, square2: @Vec
         or testPointSquare(square1 + @as(@Vector(2, f32), @splat(square1_length/2)), square2, square2_length);
 }
 
-pub const laser_collision = CollisionData {
+pub const laser_collision = game.CollisionData {
     .test_func = &testLaser,
     .collision_func = &collisionDelete
 };
 
-pub const enemy_collision = CollisionData {
+pub const enemy_collision = game.CollisionData {
     .test_func = &testEnemy,
     .collision_func = &collisionDelete
 };
