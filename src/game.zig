@@ -1,5 +1,6 @@
 const std = @import("std");
 const graphics = @import("graphics.zig");
+const collision = @import("collision.zig");
 //const sdl = @import("sdl.zig");
 
 /// Represents an object within the game.
@@ -12,10 +13,12 @@ pub const GameObject = struct {
     value: i64 = 0,
     update_func: ?*const fn (game: *GameData, self: *@This()) void = null,
     draw_func: ?*const fn (image: *graphics.Image, self: *const @This()) graphics.DrawError!void = null,
+    collision_data: ?*const collision.CollisionData = null,
     data: ?*anyopaque = null,
     parent: *GameData,
     invalid: bool = false,
     dyn_alloc: bool = false, // Set this to true if the object was dynamically allocated and needs to be freed
+    type_id: u8,
 };
 
 /// A collection of data representing the game's data
@@ -27,17 +30,16 @@ pub const GameData = struct {
     //window: sdl.SDL.Window,
     keyboard: [128]bool = undefined,
     frames: u32 = 0,
-    last_timestamp: i64,
     curr_fps: u32 = 0,
     target_fps: u32 = 0, // 0 = unlimited
     score: u16 = 0,
+    game_over: bool = false,
 
     /// Initializes the game data
     pub fn init(allocator: std.mem.Allocator) GameData {
         return GameData {
             .objects = std.ArrayList(*GameObject).init(allocator),
             .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something,
-            .last_timestamp = std.time.milliTimestamp(),
         };
     }
 
