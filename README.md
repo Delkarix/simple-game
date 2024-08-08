@@ -2,9 +2,9 @@
 This game was made as a simple demo to play with SDL3. It's a generic shoot-em-up with a basic square playermodel and basic square enemies.
 
 It contains a rudimentary hand-written text-display system based on hardcoded bitmasking instead of using SDL TTF/RTF.
-A more improved version will be made in the future using OpenCL for improved graphics capabilities.
 
-The code may be a bit messy in some places at the moment as the project was initially supposed to be a small prototype but ended up growing rather large as I kept adding features.
+This version is a ground-up rewrite in Zig using much more advanced systems that are more similar to traditional gamedev, particularly to encourage emergent gameplay/programming.
+This is partially in preparation for the development of future games.
 
 Controls are simple:
 * W: Forward
@@ -12,8 +12,6 @@ Controls are simple:
 * S: Down
 * D: Right
 * Q: Quit
-* 1: Toggle Enemy Movement
-* 2: Toggle Enemy Spawning
 * Escape: Pause
 * Left-Click: Fire
 
