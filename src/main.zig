@@ -141,12 +141,20 @@ pub fn main() !void {
     
 // </OBJECTS>
 
+    var ticks = std.time.milliTimestamp();
+    
     // Main loop
     while (data.running) {
         // Force FPS
         if (data.target_fps > 0) {
-            const ticks = std.time.milliTimestamp();
-            while (std.time.milliTimestamp() < ticks + 1000/data.target_fps) {}
+            const curr_tick = std.time.milliTimestamp();
+            if (curr_tick < ticks + 1000/data.target_fps) {
+                continue;
+            }
+
+            ticks = curr_tick;
+            // const ticks = std.time.milliTimestamp();
+            // while (std.time.milliTimestamp() < ticks + 1000/data.target_fps) {}
         }
         
 // <EVENT>
