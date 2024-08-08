@@ -13,6 +13,7 @@ pub const GameObject = struct {
     update_func: ?*const fn (game: *GameData, self: *@This()) void = null,
     draw_func: ?*const fn (image: *graphics.Image, self: *const @This()) graphics.DrawError!void = null,
     collision_data: ?*const CollisionData = null,
+    has_collision: bool = false, // Determines whether an object will accept collisions. If they have valid collision_data, they can still invoke collision functions on other objects.
     data: ?*anyopaque = null,
     parent: *GameData,
     invalid: bool = false,
@@ -61,5 +62,5 @@ pub const GameData = struct {
 
 pub const CollisionData = struct {
     test_func: *const fn (self: *GameObject, collider: *GameObject) bool,
-    collision_func: *const fn (game_data: *GameData, self: *GameObject, collider: *GameObject) void,
+    collision_func: *const fn (game_data: *GameData, self: *GameObject, collider: *GameObject) void
 };

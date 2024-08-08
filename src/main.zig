@@ -7,15 +7,15 @@ const collision = @import("collision.zig");
 const update = @import("update.zig");
 const draw = @import("draw.zig");
 
-pub const WIDTH = 640;
-pub const HEIGHT = 480;
+pub const WIDTH = 1280;//640;
+pub const HEIGHT = 960;//480;
 
 pub const TYPES = enum(u8) {
     PLAYER,
     TEXT,
     TARGET,
     OBJECT_MODIFIER,
-    ENEMY_SPAWNER,
+    OBJECT_SPAWNER,
     COLLISION_DETECTOR,
     ENEMY,
     LASER
@@ -68,6 +68,7 @@ pub fn main() !void {
         .velocity = 2,
         .length = 10,
         .parent = &data,
+        .has_collision = true,
         .type_id = @intFromEnum(TYPES.PLAYER),
     };
     try data.objects.append(&player); // Player should always (theoretically) be item #0 in the list
@@ -103,7 +104,6 @@ pub fn main() !void {
     // Create enemy spawner
     // #3
     var enemy_spawner = game.GameObject {
-        .pos = .{-1, -1},
         .velocity = 1, // Enemy speed
         .length = 1000, // How long in milliseconds before spawning another enemy
         .color = .{ .r = 255, .g = 0, .b = 0 },
@@ -111,7 +111,7 @@ pub fn main() !void {
         .data = &mem_pool, // Allocator
         .parent = &data,
         .value = std.time.milliTimestamp(), // last timestamp
-        .type_id = @intFromEnum(TYPES.ENEMY_SPAWNER),
+        .type_id = @intFromEnum(TYPES.OBJECT_SPAWNER),
     };
     // enemy_spawner.length += 1;
     try data.objects.append(&enemy_spawner);
@@ -119,7 +119,6 @@ pub fn main() !void {
     // Create the collision detector. NOTE: OPTIMIZE IN THE FUTURE
     // #4
     var collision_detector = game.GameObject {
-        .pos = .{-1, -1},
         .length = 2, // How many subdivisions to make
         .parent = &data,
         .update_func = &update.updateCollision,
@@ -130,7 +129,6 @@ pub fn main() !void {
     // Create the enemy spawner speed increaser
     // #5
     var enemy_speed_increaser = game.GameObject {
-        .pos = .{-1, -1},
         .velocity = 0.1, // The rate at which enemies should speed up
         .length = 10, // The rate at which the spawn rate should be increased (in milliseconds)
         .value = std.time.milliTimestamp(),
@@ -176,6 +174,7 @@ pub fn main() !void {
                         .update_func = &update.updateLaser,
                         .draw_func = &draw.drawLaser,
                         .collision_data = &collision.laser_collision,
+                        .has_collision = true,
                         .data = &mem_pool, // Allocator
                         .parent = &data,
                         .dyn_alloc = true,

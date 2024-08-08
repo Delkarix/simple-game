@@ -67,6 +67,7 @@ pub fn updateSpawnEnemy(game_data: *game.GameData, self: *game.GameObject) void 
             .update_func = &updateEnemy,
             .draw_func = &draw.drawSquare,
             .collision_data = &collision.enemy_collision,
+            .has_collision = true,
             .parent = @constCast(game_data),
             .dyn_alloc = true,
             .type_id = @intFromEnum(main.TYPES.ENEMY),
@@ -120,8 +121,8 @@ pub fn updateCollision(game_data: *game.GameData, self: *game.GameObject) void {
             // Iterate through all items
             for (0..game_data.objects.items.len) |j| {
                 // If this is not the same item and the items collide, execute the collision function.
-                if (i != j and game_data.objects.items[i].collision_data.?.test_func(game_data.objects.items[i], game_data.objects.items[j])) {
-                    // std.debug.print("Object {} collided with Object {}\n", .{@as(TYPES, @enumFromInt(game_data.objects.items[i].type_id)), @as(TYPES, @enumFromInt(game_data.objects.items[j].type_id))});
+                if (i != j and game_data.objects.items[j].has_collision and game_data.objects.items[i].collision_data.?.test_func(game_data.objects.items[i], game_data.objects.items[j])) {
+                    // std.debug.print("Object {} collided with Object {}\n", .{@as(@import("main.zig").TYPES, @enumFromInt(game_data.objects.items[i].type_id)), @as(@import("main.zig").TYPES, @enumFromInt(game_data.objects.items[j].type_id))});
                     game_data.objects.items[i].collision_data.?.collision_func(game_data, game_data.objects.items[i], game_data.objects.items[j]);
                 }
             }
