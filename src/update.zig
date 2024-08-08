@@ -1,7 +1,7 @@
 const std = @import("std");
-const sdl = @import("../sdl.zig"); // This might fail if sdl is not initialized yet
-const main = @import("../main.zig");
-const game = @import("../game.zig");
+const sdl = @import("engine/sdl.zig"); // This might fail if sdl is not initialized yet
+const game = @import("engine/game.zig");
+const main = @import("main.zig");
 const collision = @import("collision.zig");
 const draw = @import("draw.zig");
 

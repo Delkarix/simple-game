@@ -1,6 +1,6 @@
 // const std = @import("std");
-const game = @import("../game.zig");
-const TYPES = @import("../main.zig").TYPES;
+const game = @import("engine/game.zig");
+const TYPES = @import("main.zig").TYPES;
 
 // pub fn BinaryTree(comptime DataType: type) type {
 //     return struct {

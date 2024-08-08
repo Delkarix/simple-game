@@ -1,7 +1,7 @@
 const std = @import("std");
-const game = @import("../game.zig");
-const graphics = @import("../graphics.zig");
-const font = @import("../font.zig");
+const game = @import("engine/game.zig");
+const graphics = @import("engine/graphics.zig");
+const font = @import("engine/font.zig");
 
 // Draws the laser sprite.
 pub fn drawLaser(image: *graphics.Image, laser: *const game.GameObject) graphics.DrawError!void {

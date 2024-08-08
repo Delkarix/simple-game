@@ -1,11 +1,11 @@
 const std = @import("std");
-const graphics = @import("graphics.zig");
-const sdl = @import("sdl.zig");
-const game = @import("game.zig");
-const font = @import("font.zig");
-const collision = @import("custom/collision.zig");
-const update = @import("custom/update.zig");
-const draw = @import("custom/draw.zig");
+const graphics = @import("engine/graphics.zig");
+const sdl = @import("engine/sdl.zig");
+const game = @import("engine/game.zig");
+const font = @import("engine/font.zig");
+const collision = @import("collision.zig");
+const update = @import("update.zig");
+const draw = @import("draw.zig");
 
 pub const WIDTH = 640;
 pub const HEIGHT = 480;
@@ -150,10 +150,6 @@ pub fn main() !void {
                 sdl.SDL_EVENT_KEY_UP => data.keyboard[(event.key.key & 0xFF) % 128] = false,
                 
                 sdl.SDL_EVENT_MOUSE_BUTTON_DOWN => {
-                    // TODO: ADD LASERS
-                    // TODO: ADD ENEMIES
-                    // TODO: Collision system?
-
                     // Create laser
                     const laser_ptr = try mem_pool.create();
                     laser_ptr.* = game.GameObject {
@@ -176,12 +172,14 @@ pub fn main() !void {
             }
 
             if (data.keyboard['q']) {
+                // std.debug.print("exited\n", .{});
                 data.running = false; // You could just do a direct assignment here probably
             }
 
             if (data.keyboard[sdl.SDLK_ESCAPE]) {
                 if (!data.game_over) {
                     data.paused = !data.paused;
+                    // std.debug.print("paused\n", .{});
 
                     // Notify the player that the game is paused
                     update.updateStatus(&data, &status);

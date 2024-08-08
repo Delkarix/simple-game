@@ -38,7 +38,8 @@ pub const GameData = struct {
     pub fn init(allocator: std.mem.Allocator) GameData {
         return GameData {
             .objects = std.ArrayList(*GameObject).init(allocator),
-            .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something,
+            .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something
+            .keyboard = std.mem.zeroes([128]bool)
         };
     }
 
