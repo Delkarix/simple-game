@@ -52,7 +52,7 @@ pub fn updateSpawnEnemy(game_data: *game.GameData, self: *game.GameObject) void 
 
         // Attempt to find a viable position that is reasonably distant from the player
         var try_pos: @Vector(2, f32) = .{game_data.randomizer.random().float(f32)*main.WIDTH, game_data.randomizer.random().float(f32)*main.HEIGHT};
-        while (std.math.hypot(self.pos[0] - try_pos[0], self.pos[1] - try_pos[1]) < 100 or try_pos[0] <= 20/2 or try_pos[0] >= main.WIDTH - 20/2 or try_pos[1] <= 20/2 or try_pos[1] >= main.HEIGHT - 20/2) {
+        while (std.math.hypot(self.pos[0] - try_pos[0], self.pos[1] - try_pos[1]) < 250 or try_pos[0] <= 20/2 or try_pos[0] >= main.WIDTH - 20/2 or try_pos[1] <= 20/2 or try_pos[1] >= main.HEIGHT - 20/2) {
             try_pos = .{game_data.randomizer.random().float(f32)*main.WIDTH, game_data.randomizer.random().float(f32)*main.HEIGHT};
         }
         // std.debug.print("{}\n", .{try_pos});
@@ -127,4 +127,17 @@ pub fn updateCollision(game_data: *game.GameData, self: *game.GameObject) void {
             }
         }
     }
+}
+
+pub fn updateSpawnRate(game_data: *game.GameData, self: *game.GameObject) void {
+    _ = game_data;
+
+    const timestamp = std.time.milliTimestamp();
+    if (self.value + 1000 <= timestamp) {
+        const spawner = @as(*game.GameObject, @alignCast(@ptrCast(self.data.?)));
+        spawner.velocity += self.velocity;
+        spawner.length -= self.length;
+
+        self.value = timestamp;
+    }    
 }

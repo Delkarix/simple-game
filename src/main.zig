@@ -14,6 +14,7 @@ pub const TYPES = enum(u8) {
     PLAYER,
     TEXT,
     TARGET,
+    OBJECT_MODIFIER,
     ENEMY_SPAWNER,
     COLLISION_DETECTOR,
     ENEMY,
@@ -125,6 +126,20 @@ pub fn main() !void {
         .type_id = @intFromEnum(TYPES.COLLISION_DETECTOR),
     };
     try data.objects.append(&collision_detector);
+
+    // Create the enemy spawner speed increaser
+    // #5
+    var enemy_speed_increaser = game.GameObject {
+        .pos = .{-1, -1},
+        .velocity = 0.1, // The rate at which enemies should speed up
+        .length = 10, // The rate at which the spawn rate should be increased (in milliseconds)
+        .value = std.time.milliTimestamp(),
+        .update_func = &update.updateSpawnRate,
+        .data = &enemy_spawner,
+        .parent = &data,
+        .type_id = @intFromEnum(TYPES.OBJECT_MODIFIER),
+    };
+    try data.objects.append(&enemy_speed_increaser);
     
 // </OBJECTS>
 
