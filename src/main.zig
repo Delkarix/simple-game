@@ -7,8 +7,8 @@ const collision = @import("collision.zig");
 const update = @import("update.zig");
 const draw = @import("draw.zig");
 
-pub const WIDTH = 1280;//640;
-pub const HEIGHT = 960;//480;
+pub const WIDTH = 1280; //640;
+pub const HEIGHT = 960; //480;
 
 pub const TYPES = enum(u8) {
     PLAYER,
@@ -21,10 +21,43 @@ pub const TYPES = enum(u8) {
     LASER
 };
 
+var LOCK = true;
+
+
+// NOTE: THIS MODEL IS A PROTOTYPE. IN THE FUTURE, WE WILL HAVE MANY DIFFERENT THREADS THAT DO DIFFERENT TASKS'
+// fn updateThread(data: *game.GameData, id: u8) void {
+//     // id MUST START AT 1 
+  
+//     while (data.running) {
+//         for ((id-1)*data.objects.items.len..id*data.objects.items.len) |i| {
+//             if (!data.paused and data.objects.items[i].update_func != null) {
+//                 data.objects.items[i].update_func.?(@constCast(data), data.objects.items[i]);
+//             }
+
+//             //i += 1;
+//         }
+//     }
+// }
+
+// fn drawThread(data: *game.GameData, image: *graphics.Image, id: u8) !void {
+//     while (data.running) {
+//         while (LOCK) {}
+        
+//         for ((id-1)*data.objects.items.len..id*data.objects.items.len) |i| {
+//             if (data.objects.items[i].draw_func != null and !data.objects.items[i].invalid) {
+//                 try data.objects.items[i].draw_func.?(@constCast(@alignCast(image)), data.objects.items[i]);
+//             }
+//             //i += 1;
+//         }
+        
+//     }
+// }
+
+
 // IDEA: Right-click = shield
 
 pub fn main() !void {
-// <INITIALIZATION>
+    // <INITIALIZATION>
     const SDL = try sdl.init();
     defer sdl.deinit();
 
@@ -39,11 +72,11 @@ pub fn main() !void {
         // If there are leaks, notify
         if (leaks == .leak) {
             std.debug.print("Leaks detected.\n", .{});
-        } 
+        }
     }
 
-    var data: game.GameData = game.GameData.init(gpa.allocator());
-    data.target_fps = 60;
+    var rand = std.Random.DefaultPrng.init(@intCast(std.time.timestamp()));
+    var data: game.GameData = game.GameData.init(gpa.allocator(), rand.random());
     defer data.deinit();
 
     // Init the font system
@@ -53,10 +86,10 @@ pub fn main() !void {
     var mem_pool = std.heap.MemoryPool(game.GameObject).init(gpa.allocator());
     defer mem_pool.deinit();
     // std.debug.print("{}\n", .{data.randomizer.next()});
-    
-// </INITIALIZATION>
 
-// <OBJECTS>
+    // </INITIALIZATION>
+
+    // <OBJECTS>
     // Create the player object
     // #0
     var player = game.GameObject {
@@ -72,12 +105,12 @@ pub fn main() !void {
         .type_id = @intFromEnum(TYPES.PLAYER),
     };
     try data.objects.append(&player); // Player should always (theoretically) be item #0 in the list
-    
+
     // Create status text game object (FPS, Score, Paused, Game Over)
     // #1
     var status = game.GameObject {
-        .pos = .{0, 0},
-        .color = .{.r = 255, .g = 255, .b = 255},
+        .pos = .{ 0, 0 },
+        .color = .{ .r = 255, .g = 255, .b = 255 },
         .update_func = &update.updateStatus,
         .draw_func = &draw.drawStatus,
         .data = @constCast(@ptrCast(&font_obj)),
@@ -90,9 +123,9 @@ pub fn main() !void {
     // Create target thingy
     // #2
     var target = game.GameObject {
-        .pos = .{ WIDTH/2, HEIGHT/2 },
+        .pos = .{ WIDTH / 2, HEIGHT / 2 },
         .length = 10,
-        .color = .{.r = 0, .g = 0, .b = 255},
+        .color = .{ .r = 0, .g = 0, .b = 255 },
         .update_func = &update.updateTarget,
         .draw_func = &draw.drawLaser, //&drawSquare,
         .parent = &data,
@@ -138,17 +171,25 @@ pub fn main() !void {
         .type_id = @intFromEnum(TYPES.OBJECT_MODIFIER),
     };
     try data.objects.append(&enemy_speed_increaser);
-    
-// </OBJECTS>
+
+    // </OBJECTS>
 
     var ticks = std.time.milliTimestamp();
+    const target_fps = 0;
+
+    // Start threads
+    // const thread1 = try std.Thread.spawn(.{}, updateThread, .{&data, 1});
+    // defer thread1.join();
     
+    // const thread2 = try std.Thread.spawn(.{}, drawThread, .{&data, &window.image, 1});
+    // defer thread2.join();
+
     // Main loop
     while (data.running) {
         // Force FPS
-        if (data.target_fps > 0) {
+        if (target_fps > 0) {
             const curr_tick = std.time.milliTimestamp();
-            if (curr_tick < ticks + 1000/data.target_fps) {
+            if (curr_tick < ticks + (1000/target_fps)) {
                 continue;
             }
 
@@ -156,8 +197,8 @@ pub fn main() !void {
             // const ticks = std.time.milliTimestamp();
             // while (std.time.milliTimestamp() < ticks + 1000/data.target_fps) {}
         }
-        
-// <EVENT>
+
+        // <EVENT>
         // Event loop
         var event: sdl.SDL_Event = undefined;
         while (sdl.SDL_PollEvent(&event) != 0) {
@@ -169,16 +210,16 @@ pub fn main() !void {
                 //however higher-end keys (i.e. CAPS-LOCK will trigger the 9 key) will end up tricking the system into triggering the wrong keys.
                 sdl.SDL_EVENT_KEY_DOWN => data.keyboard[(event.key.key & 0xFF) % 128] = true,
                 sdl.SDL_EVENT_KEY_UP => data.keyboard[(event.key.key & 0xFF) % 128] = false,
-                
+
                 sdl.SDL_EVENT_MOUSE_BUTTON_DOWN => {
                     // Create laser
                     const laser_ptr = try mem_pool.create();
                     laser_ptr.* = game.GameObject {
                         .pos = player.pos,
-                        .direction = target.direction,//(target.pos - player.pos)/@as(@Vector(2, f32), @splat(std.math.hypot(target.pos[0] - player.pos[0], target.pos[1] - player.pos[1]))),
+                        .direction = target.direction, //(target.pos - player.pos)/@as(@Vector(2, f32), @splat(std.math.hypot(target.pos[0] - player.pos[0], target.pos[1] - player.pos[1]))),
                         .velocity = 5,
                         .length = 10,
-                        .color = .{.r = 0, .g = 0, .b = 255},
+                        .color = .{ .r = 0, .g = 0, .b = 255 },
                         .update_func = &update.updateLaser,
                         .draw_func = &draw.drawLaser,
                         .collision_data = &collision.laser_collision,
@@ -211,25 +252,26 @@ pub fn main() !void {
             }
         }
 
-// </EVENT>
+        // </EVENT>
 
-// <ITERATE>
+        // <ITERATE>
 
         // If the game is over, display a message stating so
         if (data.game_over) {
             for (0..12) |y| {
-                try window.image.fillRow(WIDTH/2 - 8*4 - 8/2, HEIGHT/2 - 12/2 + @as(u16, @intCast(y)), 8*9, graphics.Color {.r = 0, .g = 0, .b = 0});
+                try window.image.fillRow(WIDTH/2 - 8*4 - 8/2, HEIGHT/2 - 12/2 + @as(u16, @intCast(y)), 8*9, graphics.Color { .r = 0, .g = 0, .b = 0 });
             }
-            try font_obj.renderString(&window.image, "GAME OVER", WIDTH/2 - 8*4 - 8/2, HEIGHT/2 - 8/2, graphics.Color {.r = 255, .g = 0, .b = 0});
+            try font_obj.renderString(&window.image, "GAME OVER", WIDTH/2 - 8*4 - 8/2, HEIGHT/2 - 8/2, graphics.Color { .r = 255, .g = 0, .b = 0 });
             data.paused = true;
             window.update();
         }
 
         if (!data.paused) {
             // Clear the screen
-            @memset(window.image.pixels, graphics.Color {.r = 0, .g = 0, .b = 0});
-        
+            @memset(window.image.pixels, graphics.Color { .r = 0, .g = 0, .b = 0, .a = 0 });
+
             // Draw and update all game objects
+            // TODO: CHANGE TO TICK-BASED SYSTEM SO THE GAME BECOMES INDEPENDENT OF FPS CHANGES
             for (0..data.objects.items.len) |i| {
                 if (!data.paused and data.objects.items[i].update_func != null) {
                     data.objects.items[i].update_func.?(&data, data.objects.items[i]);
@@ -241,33 +283,36 @@ pub fn main() !void {
                 //i += 1;
             }
             // for (data.objects.items) |object| {
-                // if (!data.paused and object.update_func != null) {
-                    // object.update_func.?(&data, object);
-                // }
+            // if (!data.paused and object.update_func != null) {
+            // object.update_func.?(&data, object);
+            // }
 
-                // if (object.draw_func != null and !object.invalid) {
-                    // try object.draw_func.?(&window.image, object);
-                // }
+            // if (object.draw_func != null and !object.invalid) {
+            // try object.draw_func.?(&window.image, object);
+            // }
             // }
 
             // Remove invalid objects
             // i = 0;
             var i: usize = 0;
+            // LOCK = true;
             while (i < data.objects.items.len) : (i += 1) {
-            // for (0..data.objects.items.len) |i| {
+                // for (0..data.objects.items.len) |i| {
                 if (data.objects.items[i].invalid) {
                     const obj = data.objects.swapRemove(i);
-                    
+
                     if (obj.dyn_alloc) {
                         mem_pool.destroy(obj);
                     }
                     continue;
                 }
             }
-       
+            // LOCK = false;
+
             window.update(); // For some reason, a single call won't always suffice. Annoying.
             data.frames += 1;
+            std.debug.print("{}\n", .{data.curr_fps});
         }
-// </ITERATE>
+        // </ITERATE>
     }
 }

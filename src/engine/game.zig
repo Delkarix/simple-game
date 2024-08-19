@@ -26,7 +26,7 @@ pub const GameData = struct {
     objects: std.ArrayList(*GameObject),
     running: bool = true,
     paused: bool = false,
-    randomizer: std.Random.Xoshiro256,
+    randomizer: std.Random,
     //window: sdl.SDL.Window,
     keyboard: [128]bool = undefined,
     frames: u32 = 0,
@@ -34,13 +34,15 @@ pub const GameData = struct {
     target_fps: u32 = 0, // 0 = unlimited
     score: u16 = 0,
     game_over: bool = false,
+    thread_count: usize,
 
     /// Initializes the game data
-    pub fn init(allocator: std.mem.Allocator) GameData {
+    pub fn init(allocator: std.mem.Allocator, randomizer: std.Random) GameData {
         return GameData {
             .objects = std.ArrayList(*GameObject).init(allocator),
-            .randomizer = std.Random.DefaultPrng.init(@intCast(std.time.timestamp())), // Probably should update in the future so it uses the current time or something
-            .keyboard = std.mem.zeroes([128]bool)
+            .randomizer = randomizer, // Probably should update in the future so it uses the current time or something
+            .keyboard = std.mem.zeroes([128]bool),
+            .thread_count = std.Thread.getCpuCount() catch 1,
         };
     }
 

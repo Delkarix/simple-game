@@ -51,9 +51,9 @@ pub fn updateSpawnEnemy(game_data: *game.GameData, self: *game.GameObject) void 
         self.pos = game_data.objects.items[0].pos; // This *should* be the player
 
         // Attempt to find a viable position that is reasonably distant from the player
-        var try_pos: @Vector(2, f32) = .{game_data.randomizer.random().float(f32)*main.WIDTH, game_data.randomizer.random().float(f32)*main.HEIGHT};
+        var try_pos: @Vector(2, f32) = .{game_data.randomizer.float(f32)*main.WIDTH, game_data.randomizer.float(f32)*main.HEIGHT};
         while (std.math.hypot(self.pos[0] - try_pos[0], self.pos[1] - try_pos[1]) < 250 or try_pos[0] <= 20/2 or try_pos[0] >= main.WIDTH - 20/2 or try_pos[1] <= 20/2 or try_pos[1] >= main.HEIGHT - 20/2) {
-            try_pos = .{game_data.randomizer.random().float(f32)*main.WIDTH, game_data.randomizer.random().float(f32)*main.HEIGHT};
+            try_pos = .{game_data.randomizer.float(f32)*main.WIDTH, game_data.randomizer.float(f32)*main.HEIGHT};
         }
         // std.debug.print("{}\n", .{try_pos});
         
