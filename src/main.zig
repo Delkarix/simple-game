@@ -56,6 +56,18 @@ var LOCK = true;
 
 // IDEA: Right-click = shield
 
+fn callUpdateFn(function: *const fn (game: *game.GameData, object: *game.GameObject) void, game_data: *game.GameData, obj: *game.GameObject) void {
+    function(game_data, obj);
+}
+
+fn callDrawFn(function: *const fn (image: *graphics.Image, object: *game.GameObject) graphics.DrawError!void, img: *graphics.Image, obj: *game.GameObject) !void {
+    try function(img, obj);
+}
+
+fn callDrawFnUnwrapped(function: *const fn (image: *graphics.Image, object: *game.GameObject) graphics.DrawError!void, img: *graphics.Image, obj: *game.GameObject) void {
+    function(img, obj) catch {}; // Evil and very bad but threading won't work otherwise
+}
+
 pub fn main() !void {
     // <INITIALIZATION>
     const SDL = try sdl.init();
@@ -86,6 +98,17 @@ pub fn main() !void {
     var mem_pool = std.heap.MemoryPool(game.GameObject).init(gpa.allocator());
     defer mem_pool.deinit();
     // std.debug.print("{}\n", .{data.randomizer.next()});
+
+    // Create thread pools
+    var update_pool = std.Thread.Pool { .threads = &.{}, .allocator = gpa.allocator() };
+    var update_wg = std.Thread.WaitGroup {};
+    try update_pool.init(std.Thread.Pool.Options { .allocator = gpa.allocator(), .n_jobs = 4});
+    defer update_pool.deinit();
+
+    var draw_pool = std.Thread.Pool { .threads = &.{}, .allocator = gpa.allocator() };
+    var draw_wg = std.Thread.WaitGroup {};
+    try draw_pool.init(std.Thread.Pool.Options { .allocator = gpa.allocator(), .n_jobs = 4});
+    defer draw_pool.deinit();
 
     // </INITIALIZATION>
 
@@ -280,8 +303,28 @@ pub fn main() !void {
                 if (data.objects.items[i].draw_func != null and !data.objects.items[i].invalid) {
                     try data.objects.items[i].draw_func.?(&window.image, data.objects.items[i]);
                 }
-                //i += 1;
+                 
+                 //i += 1;
             }
+
+            for (0..data.objects.items.len) |i| {
+                if (!data.paused and data.objects.items[i].update_func != null) {
+                    update_pool.spawnWg(&update_wg, callUpdateFn, .{data.objects.items[i].update_func.?, &data, data.objects.items[i]});
+                }
+            }
+            update_pool.waitAndWork(&update_wg);
+            update_wg.reset();
+
+            for (0..data.objects.items.len) |i| {
+                if (data.objects.items[i].draw_func != null and !data.objects.items[i].invalid) {
+                    draw_pool.spawnWg(&draw_wg, callDrawFnUnwrapped, .{data.objects.items[i].draw_func.?, &window.image, data.objects.items[i]});
+                }
+            }
+            draw_pool.waitAndWork(&draw_wg);
+            draw_wg.reset();
+
+
+            
             // for (data.objects.items) |object| {
             // if (!data.paused and object.update_func != null) {
             // object.update_func.?(&data, object);
@@ -311,7 +354,7 @@ pub fn main() !void {
 
             window.update(); // For some reason, a single call won't always suffice. Annoying.
             data.frames += 1;
-            std.debug.print("{}\n", .{data.curr_fps});
+            // std.debug.print("{}\n", .{data.curr_fps});
         }
         // </ITERATE>
     }
