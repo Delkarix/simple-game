@@ -1,0 +1,72 @@
+// Scanline Rendering
+
+#version 460
+
+struct Line {
+    vec2 a;
+    vec2 b;
+
+    vec4 color_a;
+    vec4 color_b;
+};
+
+/*
+For the sake of convenience:
+    ALL Y-RESOLUTIONS SHOULD BE MULTIPLES OF 64
+    local_size_x: The current geometric object id
+    local_size_y: The Y position line (current row)
+*/
+layout (local_size_x = 1, local_size_y = 64, local_size_z = 1) in;
+layout (std430, set = 0, binding = 0) readonly buffer lineBuffer { // try removing std430 at some point
+    Line lines[];
+};
+layout (set = 1, binding = 0, rgba8) uniform writeonly image2D outImage;
+/*layout (set = 2, binding = 0) uniform UBO {
+    uint line_count;
+} info;*/
+
+/*
+vec4 blendColor(vec4 a, vec4 b, float t) {
+    return a + t*(b - a);
+}*/
+
+void main() {
+    // NEED TO FIGURE OUT HOW TO GET LINE ID AND DETERMINE WHETHER TO DRAW WITHOUT BRANCHING, IDEALLY. MAYBE TRANSPARENCY?
+    float y = float(gl_GlobalInvocationID.y);
+
+    uint id = gl_GlobalInvocationID.x;
+
+    // Branching bad, need to figure out another way around this (probably mathematically)
+    // CPU SHOULD DO PRE-CULLING MAYBE
+    /*if (id >= info.line_count) {
+        return;
+    }*/
+
+    Line line = lines[id];
+
+    // Branching bad, need to figure out another way around this (probably mathematically)
+    // CPU SHOULD DO PRE-CULLING MAYBE
+    if (y > line.b.y || y < line.a.y || line.a.y == line.b.y) {
+        return;
+    }
+
+    float t = (y - line.a.y)/(line.b.y - line.a.y);
+    float x = line.a.x + t*(line.b.x - line.a.x);
+    vec4 curr_col = line.color_a + t*(line.color_b - line.color_a);
+    curr_col.w = 1.0;
+
+    imageStore(outImage, ivec2(x, y), curr_col);
+
+    // Branching bad, need to figure out another way around this (probably mathematically)
+    if (uint(y) < uint(line.b.y)) {
+        float t2 = t + 1.0/(line.b.y - line.a.y);
+        float len = (line.b.x - line.a.x)/(line.b.y - line.a.y);
+        vec4 curr_col2 = line.color_a + t2*(line.color_b - line.color_a);
+        curr_col2.w = 1.0;
+
+        // Not sure if this constitutes branching. Probably a better algorithm somewhere.
+        for (float i = 1; i < len; i++) {
+            imageStore(outImage, ivec2(x + i, y + 1), curr_col2);
+        }
+    }
+}
